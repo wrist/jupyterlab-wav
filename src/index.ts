@@ -17,7 +17,7 @@ const CLASS_NAME = 'mimerenderer-wav';
 /**
  * A widget for rendering wav.
  */
-export class OutputWidget extends Widget implements IRenderMime.IRenderer {
+export class WavWidget extends Widget implements IRenderMime.IRenderer {
   /**
    * Construct a new output widget.
    */
@@ -25,6 +25,9 @@ export class OutputWidget extends Widget implements IRenderMime.IRenderer {
     super();
     this._mimeType = options.mimeType;
     this.addClass(CLASS_NAME);
+    this._audio = document.createElement('audio');
+    this._audio.setAttribute('controls', '');
+    this.node.appendChild(this._audio);
   }
 
   /**
@@ -33,11 +36,12 @@ export class OutputWidget extends Widget implements IRenderMime.IRenderer {
   renderModel(model: IRenderMime.IMimeModel): Promise<void> {
     
     let data = model.data[this._mimeType] as string;
-    this.node.textContent = data.slice(0, 16384);
+    this._audio.src = `data:${MIME_TYPE};base64,${data}`
     
     return Promise.resolve();
   }
 
+  private _audio: HTMLAudioElement;
   private _mimeType: string;
 }
 
@@ -47,7 +51,7 @@ export class OutputWidget extends Widget implements IRenderMime.IRenderer {
 export const rendererFactory: IRenderMime.IRendererFactory = {
   safe: true,
   mimeTypes: [MIME_TYPE],
-  createRenderer: options => new OutputWidget(options)
+  createRenderer: options => new WavWidget(options)
 };
 
 /**
@@ -61,6 +65,7 @@ const extension: IRenderMime.IExtension = {
   fileTypes: [
     {
       name: 'wav',
+      fileFormat: 'base64',
       mimeTypes: [MIME_TYPE],
       extensions: ['.wav']
     }
@@ -68,6 +73,7 @@ const extension: IRenderMime.IExtension = {
   documentWidgetFactoryOptions: {
     name: 'JupyterLab wav viewer',
     primaryFileType: 'wav',
+    modelName: 'base64',
     fileTypes: ['wav'],
     defaultFor: ['wav']
   }
