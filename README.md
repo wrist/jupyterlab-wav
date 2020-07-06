@@ -9,7 +9,7 @@ A JupyterLab extension for rendering wav files.
 ## Installation
 
 ```bash
-jupyter labextension install jupyterlab-wav
+jupyter labextension install @wrist/jupyterlab-wav
 ```
 
 ## Development

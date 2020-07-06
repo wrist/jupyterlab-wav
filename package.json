@@ -1,8 +1,11 @@
 {
-  "name": "jupyterlab-wav",
+  "name": "@wrist/jupyterlab-wav",
   "version": "0.1.0",
   "description": "A JupyterLab extension for rendering wav files.",
   "author": "wrist <stoicheia1986@gmail.com>",
+  "homepage": "https://github.com/wrist/jupyterlab-wav",
+  "repository": {"type": "git", "url": "https://github.com/wrist/jupyterlab-wav"},
+  "license" : "MIT",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "style": "style/index.css",
