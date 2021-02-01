@@ -3,3 +3,10 @@ lib/
 node_modules/
 *.egg-info/
 *.tsbuildinfo
+_temp_extension
+
+*~
+*.wav
+
+*.swp
+*.swo
