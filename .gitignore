@@ -4,6 +4,7 @@ node_modules/
 *.egg-info/
 *.tsbuildinfo
 _temp_extension
+yarn-error.log
 
 *~
 *.wav

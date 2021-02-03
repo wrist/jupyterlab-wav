@@ -34,7 +34,9 @@
     "extension:install": "jupyter labextension install jupyterlab-wav",
     "extension:uninstall": "jupyter labextension uninstall  jupyterlab-wav",
     "prepare": "npm run clean && npm run build",
-    "watch": "tsc -w"
+    "watch": "tsc -w",
+    "eslint": "eslint . --ext .ts,.tsx --fix",
+    "eslint:check": "eslint . --ext .ts,.tsx"
   },
   "dependencies": {
     "@jupyterlab/application": "^3.0.3",

@@ -25,29 +25,27 @@ export class WavWidget extends Widget implements IRenderMime.IRenderer {
     this._mimeType = options.mimeType;
     this._widget = undefined;
     this.addClass(CLASS_NAME);
-      
-    console.log("WavWidget created");
+
+    console.log('WavWidget created');
   }
 
   renderModel(model: IRenderMime.IMimeModel): Promise<void> {
-    console.log("WavWidget renderModel called");
-      
+    console.log('WavWidget renderModel called');
+
     const data = model.data[this._mimeType] as string;
     const src = `data:${MIME_TYPE};base64,${data}`;
-      
-    if(this._widget){ 
-        Widget.detach(this._widget); 
-        console.log("this._widget is detached");
+
+    if (this._widget) {
+      Widget.detach(this._widget);
+      console.log('this._widget is detached');
     }
-      
-    this._widget = ReactWidget.create(
-        <AudioComponent src={src} />
-    )
-      
+
+    this._widget = ReactWidget.create(<AudioComponent src={src} />);
+
     Widget.attach(this._widget, this.node);
-      
-    console.log("ReactWidget is created and attached to this.node");
-    
+
+    console.log('ReactWidget is created and attached to this.node');
+
     return Promise.resolve();
   }
 
