@@ -1,5 +1,5 @@
 """
-wrist_jupyterlab_wav setup
+jupyterlab_wav setup
 """
 import json
 from pathlib import Path
@@ -16,7 +16,7 @@ import setuptools
 HERE = Path(__file__).parent.resolve()
 
 # The name of the project
-name = "wrist_jupyterlab_wav"
+name = "jupyterlab_wav"
 
 lab_path = (HERE / name / "labextension")
 
