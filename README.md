@@ -3,7 +3,9 @@
 ![Github Actions Status](https://github.com/wrist/jupyterlab-wav/workflows/Build/badge.svg)
 <!-- [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/wrist/jupyterlab-wav/master?urlpath=lab) -->
 
-A JupyterLab extension for rendering wav files.
+A simple wave file viewer using [WaveSurfer.js](https://wavesurfer-js.org/) for JupyterLab.
+
+![screenshot](./img/screenshot_v020.png)
 
 ## Requirements
 
