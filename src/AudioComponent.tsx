@@ -38,6 +38,7 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
         container: '#waveform',
         waveColor: waveColor,
         backgroundColor: bgColor,
+        splitChannels: true,
         plugins: [
           TimeLine.create({
             container: '#timeline'
