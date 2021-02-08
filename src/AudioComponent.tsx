@@ -22,6 +22,10 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
   // const [keypress, setKeyPress] = useState(false);
   const wavesurferRef = useRef<WaveSurfer>();
 
+  const waveContainerRef = useRef<HTMLDivElement>(null);
+  const spectrogramContainerRef = useRef<HTMLDivElement>(null);
+  const timelineContainerRef = useRef<HTMLDivElement>(null);
+
   const waveColor = '#4BF2A7';
   const bgColor = 'black';
 
@@ -33,19 +37,25 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
 
   // construct wavesurfer
   useEffect(() => {
-    if (!wavesurferRef.current) {
+    if (
+      !wavesurferRef.current &&
+      waveContainerRef.current !== null &&
+      spectrogramContainerRef.current !== null &&
+      timelineContainerRef.current !== null
+    ) {
+      console.log('WaveSurfer.create called');
       wavesurferRef.current = WaveSurfer.create({
-        container: '#waveform',
+        container: waveContainerRef.current,
         waveColor: waveColor,
         backgroundColor: bgColor,
         splitChannels: true,
         plugins: [
           TimeLine.create({
-            container: '#timeline'
+            container: timelineContainerRef.current
           }),
           Spectrogram.create({
             wavesurfer: wavesurferRef.current,
-            container: '#spectrogram',
+            container: spectrogramContainerRef.current,
             labels: true,
             colorMap: colors,
             fftSamples: fftSamples
@@ -53,12 +63,29 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
         ]
       });
     }
-  }, [wavesurferRef, colors]);
+
+    // return () => {
+    //   const wavesurfer = wavesurferRef.current;
+    //   console.log("WaveSurfer unmounted");
+    //   if (wavesurfer){
+    //     if(wavesurfer.isPlaying()) { wavesurfer.pause(); }
+    //     // wavesurfer.destroy();
+    //   }
+    // };
+  }, [
+    wavesurferRef,
+    waveContainerRef,
+    spectrogramContainerRef,
+    timelineContainerRef,
+    colors,
+    fftSamples
+  ]);
 
   // load a wave file
   useEffect(() => {
     const wavesurfer = wavesurferRef.current;
     if (wavesurfer && props.src) {
+      console.log('wavesurfer.load called');
       wavesurfer.load(props.src);
     }
   }, [wavesurferRef, props.src]);
@@ -121,9 +148,9 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
 
   return (
     <div style={{ width: '100%' }}>
-      <div id="timeline" />
-      <div id="waveform" />
-      <div id="spectrogram" />
+      <div id="timeline" ref={timelineContainerRef} />
+      <div id="waveform" ref={waveContainerRef} />
+      <div id="spectrogram" ref={spectrogramContainerRef} />
       <button
         onClick={() => {
           isPlaying ? setPlaying(false) : setPlaying(true);
