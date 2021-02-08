@@ -16,7 +16,7 @@ export class WavWidget extends ReactWidget implements IRenderMime.IRenderer {
   constructor(options: IRenderMime.IRendererOptions) {
     super();
     this._mimeType = options.mimeType;
-    this._src = "";
+    this._src = '';
     this.addClass(CLASS_NAME);
 
     console.log('WavWidget created');
@@ -36,9 +36,7 @@ export class WavWidget extends ReactWidget implements IRenderMime.IRenderer {
 
   render() {
     console.log('WavWidget render called');
-    return (
-            <AudioComponent src={this._src} />
-    );
+    return <AudioComponent src={this._src} />;
   }
 
   private _src: string;
