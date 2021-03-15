@@ -1,6 +1,6 @@
 {
   "name": "@wrist/jupyterlab-wav",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "A JupyterLab extension for rendering wav files.",
   "author": "wrist <stoicheia1986@gmail.com>",
   "homepage": "https://github.com/wrist/jupyterlab-wav",
