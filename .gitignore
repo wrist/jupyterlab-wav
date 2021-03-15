@@ -4,7 +4,8 @@ node_modules/
 *.egg-info/
 *.tsbuildinfo
 _temp_extension
-jupyterlab_wav
+jupyterlab_wav/labextension
+jupyterlab_wav/__pycache__
 yarn-error.log
 .ipynb_checkpoints
 
