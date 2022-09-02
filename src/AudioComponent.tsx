@@ -14,11 +14,16 @@ type AudioProps = { src?: string };
 const AudioComponent = (props: AudioProps): JSX.Element => {
   const zoomRange = { min: 1, max: 30000, initial: 1 };
   const fftSamplesArray = [...Array(18)].map((_, i) => Math.pow(2, i));
+  const fftWindows = [
+    'bartlett', 'bartlettHann', 'blackman', 'cosine',
+    'gauss', 'hamming', 'hann', 'lanczoz', 'rectangular', 'triangular'
+  ];
 
   const [isPlaying, setPlaying] = useState(false);
   const [zoom, setZoom] = useState(zoomRange.initial);
   //const [fftSamples, setFftSamples] = useState(fftSamplesArray[8]);
   const fftSamples = fftSamplesArray[8];
+  const fftWindow = fftWindows[6];
   // const [keypress, setKeyPress] = useState(false);
   const wavesurferRef = useRef<WaveSurfer>();
 
@@ -58,7 +63,9 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
             container: spectrogramContainerRef.current,
             labels: true,
             colorMap: colors,
-            fftSamples: fftSamples
+            fftSamples: fftSamples,
+            windowFunc: fftWindow,
+            splitChannels: true
           })
         ]
       });
@@ -107,6 +114,7 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
     const wavesurfer = wavesurferRef.current;
     if (wavesurfer) {
       wavesurfer.zoom(/*pxPerSec=*/ zoom);
+      wavesurfer.spectrogram.init();
     }
   }, [wavesurferRef, zoom]);
 

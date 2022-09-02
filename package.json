@@ -1,8 +1,11 @@
 {
   "name": "@wrist/jupyterlab-wav",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "A JupyterLab extension for rendering wav files.",
-  "author": "wrist <stoicheia1986@gmail.com>",
+  "author": {
+          "name":"wrist",
+          "email": "stoicheia1986@gmail.com"
+  },
   "homepage": "https://github.com/wrist/jupyterlab-wav",
   "repository": {
     "type": "git",
@@ -28,42 +31,53 @@
   },
   "scripts": {
     "build": "jlpm run build:lib && jlpm run build:labextension:dev",
-    "build:prod": "jlpm run build:lib && jlpm run build:labextension",
     "build:labextension": "jupyter labextension build .",
     "build:labextension:dev": "jupyter labextension build --development True .",
     "build:lib": "tsc",
+    "build:prod": "jlpm run build:lib && jlpm run build:labextension",
     "clean": "jlpm run clean:lib",
-    "clean:lib": "rimraf lib tsconfig.tsbuildinfo",
-    "clean:labextension": "rimraf jupyterlab_wav/labextension",
     "clean:all": "jlpm run clean:lib && jlpm run clean:labextension",
+    "clean:labextension": "rimraf jupyterlab_wav/labextension",
+    "clean:lib": "rimraf lib tsconfig.tsbuildinfo",
     "eslint": "eslint . --ext .ts,.tsx --fix",
     "eslint:check": "eslint . --ext .ts,.tsx",
     "install:extension": "jupyter labextension develop --overwrite .",
     "prepare": "jlpm run clean && jlpm run build:prod",
     "watch": "run-p watch:src watch:labextension",
-    "watch:src": "tsc -w",
-    "watch:labextension": "jupyter labextension watch ."
+    "watch:labextension": "jupyter labextension watch .",
+    "watch:src": "tsc -w"
   },
   "dependencies": {
-    "@jupyterlab/application": "^3.0.6",
-    "@jupyterlab/rendermime-interfaces": "^3.0.5",
-    "@jupyterlab/ui-components": "^3.0.4",
-    "@lumino/widgets": "^1.19.0",
-    "@types/wavesurfer.js": "^3.3.2",
+    "@jupyterlab/application": "^3.4.5",
+    "@jupyterlab/rendermime-interfaces": "^3.4.5",
+    "@jupyterlab/ui-components": "^3.4.5",
+    "@lumino/widgets": "^1.33.0",
+    "@types/wavesurfer.js": "^6.0.3",
     "colormap": "^2.3.2",
-    "wavesurfer.js": "^4.6.0"
+    "wavesurfer.js": "^6.2.0"
   },
   "devDependencies": {
-    "@jupyterlab/builder": "^3.0.5",
-    "@typescript-eslint/eslint-plugin": "^4.17.0",
-    "@typescript-eslint/parser": "^4.17.0",
-    "eslint": "^7.22.0",
-    "eslint-config-prettier": "^8.1.0",
+    "@babel/core": "^7.0.0",
+    "@babel/preset-env": "^7.0.0",
+    "@jupyterlab/builder": "^3.1.0",
+    "@jupyterlab/testutils": "^3.0.0",
+    "@types/jest": "^26.0.0",
+    "@typescript-eslint/eslint-plugin": "^4.8.1",
+    "@typescript-eslint/parser": "^4.8.1",
+    "eslint": "^7.14.0",
+    "eslint-config-prettier": "^6.15.0",
     "eslint-plugin-prettier": "^3.1.4",
+    "jest": "^26.0.0",
     "npm-run-all": "^4.1.5",
     "prettier": "^2.1.1",
     "rimraf": "^3.0.2",
-    "typescript": "~4.2.3"
+    "stylelint": "^14.3.0",
+    "stylelint-config-prettier": "^9.0.3",
+    "stylelint-config-recommended": "^6.0.0",
+    "stylelint-config-standard": "~24.0.0",
+    "stylelint-prettier": "^2.0.0",
+    "ts-jest": "^26.0.0",
+    "typescript": "~4.1.3"
   },
   "styleModule": "style/index.js"
 }
