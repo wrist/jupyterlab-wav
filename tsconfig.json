@@ -19,7 +19,7 @@
     "sourceMap": true,
     "strict": true,
     "target": "es2017",
-    "types": []
+    "types": ["jest"]
   },
   "include": ["src/**/*"]
 }
