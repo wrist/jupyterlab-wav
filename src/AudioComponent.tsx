@@ -15,8 +15,16 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
   const zoomRange = { min: 1, max: 30000, initial: 1 };
   const fftSamplesArray = [...Array(18)].map((_, i) => Math.pow(2, i));
   const fftWindows = [
-    'bartlett', 'bartlettHann', 'blackman', 'cosine',
-    'gauss', 'hamming', 'hann', 'lanczoz', 'rectangular', 'triangular'
+    'bartlett',
+    'bartlettHann',
+    'blackman',
+    'cosine',
+    'gauss',
+    'hamming',
+    'hann',
+    'lanczoz',
+    'rectangular',
+    'triangular'
   ];
 
   const [isPlaying, setPlaying] = useState(false);

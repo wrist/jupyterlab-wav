@@ -3,8 +3,8 @@
   "version": "0.3.0",
   "description": "A JupyterLab extension for rendering wav files.",
   "author": {
-          "name":"wrist",
-          "email": "stoicheia1986@gmail.com"
+    "name": "wrist",
+    "email": "stoicheia1986@gmail.com"
   },
   "homepage": "https://github.com/wrist/jupyterlab-wav",
   "repository": {
@@ -69,7 +69,7 @@
     "eslint-plugin-prettier": "^3.1.4",
     "jest": "^26.0.0",
     "npm-run-all": "^4.1.5",
-    "prettier": "^2.1.1",
+    "prettier": "^2.7.1",
     "rimraf": "^3.0.2",
     "stylelint": "^14.3.0",
     "stylelint-config-prettier": "^9.0.3",
