@@ -73,6 +73,7 @@
     "colormap": "^2.3.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-select": "^5.8.0",
     "wavesurfer.js": "^7.8.4"
   },
   "devDependencies": {
@@ -82,6 +83,7 @@
     "@types/json-schema": "^7.0.11",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
+        "@types/react-select": "^5.0.1",
     "@typescript-eslint/eslint-plugin": "^6.1.0",
     "@typescript-eslint/parser": "^6.1.0",
     "css-loader": "^6.7.1",
