@@ -1,0 +1,10 @@
+div#waveform {
+    resize: vertical;
+    min-height: 120px;
+    background: black;
+}
+
+div#spectrogram {
+    resize: vertical;
+    min-height: 120px;
+}

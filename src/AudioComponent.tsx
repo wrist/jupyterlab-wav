@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 import WaveSurfer from 'wavesurfer.js';
-import TimeLine from 'wavesurfer.js/dist/plugin/wavesurfer.timeline.js';
-import Spectrogram from 'wavesurfer.js/dist/plugin/wavesurfer.spectrogram.js';
+import TimeLine from 'wavesurfer.js/dist/plugins/timeline';
+import Spectrogram from 'wavesurfer.js/dist/plugins/spectrogram';
 
 import colormap from 'colormap';
 
@@ -12,7 +12,7 @@ type AudioProps = { src?: string };
  * @returns The React component
  */
 const AudioComponent = (props: AudioProps): JSX.Element => {
-  const zoomRange = { min: 1, max: 30000, initial: 1 };
+  const zoomRange = { min: 1, max: 10000, initial: 1 };
   const fftSamplesArray = [...Array(18)].map((_, i) => Math.pow(2, i));
   const fftWindows = [
     'bartlett',
@@ -31,7 +31,7 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
   const [zoom, setZoom] = useState(zoomRange.initial);
   //const [fftSamples, setFftSamples] = useState(fftSamplesArray[8]);
   const fftSamples = fftSamplesArray[8];
-  const fftWindow = fftWindows[6];
+  const fftWindow:any = fftWindows[6];
   // const [keypress, setKeyPress] = useState(false);
   const wavesurferRef = useRef<WaveSurfer>();
 
@@ -40,13 +40,14 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
   const timelineContainerRef = useRef<HTMLDivElement>(null);
 
   const waveColor = '#4BF2A7';
-  const bgColor = 'black';
 
   const colors = colormap({
     colormap: 'plasma',
     nshades: 256,
     format: 'float'
   });
+
+  const [isAudioLoaded, setAudioLoaded] = useState(false);
 
   // construct wavesurfer
   useEffect(() => {
@@ -60,23 +61,27 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
       wavesurferRef.current = WaveSurfer.create({
         container: waveContainerRef.current,
         waveColor: waveColor,
-        backgroundColor: bgColor,
-        splitChannels: true,
+        fillParent: true,
+        hideScrollbar: false,
+        splitChannels: [ { overlay: false } ],
         plugins: [
           TimeLine.create({
             container: timelineContainerRef.current
           }),
           Spectrogram.create({
-            wavesurfer: wavesurferRef.current,
+            // wavesurfer: wavesurferRef.current,
             container: spectrogramContainerRef.current,
             labels: true,
             colorMap: colors,
             fftSamples: fftSamples,
             windowFunc: fftWindow,
-            splitChannels: true
+            splitChannels: true,
+            height: 120
           })
         ]
       });
+      setAudioLoaded(false);
+
     }
 
     // return () => {
@@ -101,7 +106,8 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
     const wavesurfer = wavesurferRef.current;
     if (wavesurfer && props.src) {
       console.log('wavesurfer.load called');
-      wavesurfer.load(props.src);
+      wavesurfer.load(props.src)
+        .then(()=> {setAudioLoaded(true);});
     }
   }, [wavesurferRef, props.src]);
 
@@ -120,11 +126,11 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
   // control zoom
   useEffect(() => {
     const wavesurfer = wavesurferRef.current;
-    if (wavesurfer) {
+    if (wavesurfer && isAudioLoaded) {
       wavesurfer.zoom(/*pxPerSec=*/ zoom);
-      wavesurfer.spectrogram.init();
+      // wavesurfer.spectrogram.init();
     }
-  }, [wavesurferRef, zoom]);
+  }, [wavesurferRef, zoom, isAudioLoaded]);
 
   /*
   // space key handling

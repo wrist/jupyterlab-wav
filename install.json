@@ -1,5 +1,5 @@
 {
   "packageManager": "python",
-  "packageName": "wrist_jupyterlab_wav",
-  "uninstallInstructions": "Use your Python package manager (pip, conda, etc.) to uninstall the package wrist_jupyterlab_wav"
+  "packageName": "jupyterlab-wav",
+  "uninstallInstructions": "Use your Python package manager (pip, conda, etc.) to uninstall the package jupyterlab-wav"
 }
