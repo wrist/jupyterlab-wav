@@ -1,5 +1,6 @@
 div#waveform {
     resize: vertical;
+    overflow-y: hidden;
     min-height: 320px;
     background: black;
 }
@@ -8,4 +9,8 @@ div.analysis_params {
     display: inline-block;
     width: 200px;
     margin-right: 20px;
+}
+
+div#dump {
+    white-space: pre;
 }

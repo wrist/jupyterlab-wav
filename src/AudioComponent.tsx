@@ -7,6 +7,8 @@ import Spectrogram from 'wavesurfer.js/dist/plugins/spectrogram';
 
 import colormap from 'colormap';
 
+import {getDumpText, getUint32LE, getInt16LE} from './binutils';
+
 type AudioProps = { src?: string };
 
 type AnalysisParams = {
@@ -103,6 +105,7 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
   const waveContainerRef = useRef<HTMLDivElement>(null);
   const spectrogramContainerRef = useRef<HTMLDivElement>(null);
   const timelineContainerRef = useRef<HTMLDivElement>(null);
+  const dumpWavefileView = useRef<HTMLDivElement>(null)
 
   const waveColor = '#4BF2A7';
 
@@ -113,6 +116,74 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
   // });
 
   const [isAudioLoaded, setAudioLoaded] = useState(false);
+  const regexBase64Text = /base64,/g;
+
+  useEffect(() => {
+    if (! dumpWavefileView.current) return;
+    if (! wavedataBlob) return;
+
+    let text:string = wavedataBlob;
+
+    let pos = text.slice(0, 64).search(regexBase64Text);
+    if(pos == -1) return;
+    pos = pos + 7;  // len("base64,") == 7
+  
+    // Dump small data.
+    // - 192 chars (144 bytes) ==> 8 columns x 16 bytes
+    let rawdata128 = atob(text.slice(pos, pos+192));
+
+    // Dump 1: Hex dump
+    let html_dump_raw = '<code>' + getDumpText(rawdata128, 8) + '</code>'
+
+    // Dump 2: Extract WAVEFORMATEX structure
+    // https://learn.microsoft.com/ja-jp/windows/win32/medfound/tutorial--decoding-audio
+    let html_waveinfo = '';
+
+    if("RIFF" != rawdata128.slice(0, 4)) return;
+
+    let filesize = getUint32LE(rawdata128, 4) + 8;
+    console.log(filesize);
+
+    if(rawdata128.slice(8, 12) == 'WAVE') {
+      let offset = 12;
+      let format, nChannel, nSamplesPerSec, nAvgBytesPerSec, nBlockAlign,
+          wBitsPerSample, cbSize;
+      let datalength = 0;
+      while(offset < 128) {
+        if(rawdata128.slice(offset, offset+4) == 'fmt ') {
+          let chunk_size = getUint32LE(rawdata128, offset+4);
+          offset += 8;
+          format          =  getInt16LE(rawdata128, offset+0);
+          nChannel        =  getInt16LE(rawdata128, offset+2);
+          nSamplesPerSec  = getUint32LE(rawdata128, offset+4);
+          nAvgBytesPerSec = getUint32LE(rawdata128, offset+8);
+          nBlockAlign     =  getInt16LE(rawdata128, offset+12);
+          wBitsPerSample  =  getInt16LE(rawdata128, offset+14);
+          //cbSize          =  getInt16LE(rawdata128, offset+16); // not used.
+          offset += chunk_size;
+          continue;
+        }
+        if(rawdata128.slice(offset, offset+4) == 'data') {
+          datalength = getUint32LE(rawdata128, offset+4);
+          offset += datalength + 8;
+          continue;
+        }
+      }
+
+      const len_second = datalength / nAvgBytesPerSec;
+      const len_sample = datalength / nBlockAlign;
+
+      html_waveinfo = "Format = " + format.toString() + ";"
+        + nChannel.toString() + "ch, " + (wBitsPerSample).toString() + " bit, "
+        + nSamplesPerSec.toString() + " Hz; " 
+        + "Data Length: " + len_sample.toString() + " sample"
+        + " (" + len_second.toFixed(3).toString() + " sec)";
+    }
+
+    dumpWavefileView.current.innerHTML = "<div>" + html_waveinfo + "</div>"
+                                        + "<div>" + html_dump_raw + "</div>";
+
+  }, [dumpWavefileView, wavedataBlob])
 
   // construct wavesurfer
   useEffect(() => {
@@ -289,63 +360,64 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
           onChange={e => setZoom(Number(e.target.value))}
           min={zoomRange.min}
           max={zoomRange.max}
-          style={{ width: '100%' }}
+          style={{ width: '200px' }}
         />
         zoom: {zoom} [pixel/sec]
       </div>
-      <div>Analysis paramters</div>
-      <div style={{ margin: "50px" }}>
-        <div className={"analysis_params"}>
-          <div>Nyquist frequency (sampling_rate / 2)</div>
-          <Select
-            options={nyquistFrequencyOptions}
-            defaultValue={nyquistFrequency}
-            onChange={(value) => { value ? setNyquistFrequency(value) : null;}}
-          />
-        </div>
+      <div id="option_panel" style={{ margin: "50px" }}>
+        <details open>
+          <summary><strong>Analysis paramters</strong></summary>
 
-        <div className={"analysis_params"}>
-          <div>FFT size</div>
-          <Select
-            options={fftSizeOptions}
-            defaultValue={fftSize}
-            onChange={(value) => { value ? setFftSize(value) : null;}}
-          />
-        </div>
+          <div className={"analysis_params"}>
+            <div>Nyquist frequency (sampling_rate / 2)</div>
+            <Select
+              options={nyquistFrequencyOptions}
+              defaultValue={nyquistFrequency}
+              onChange={(value) => { value ? setNyquistFrequency(value) : null;}}
+            />
+          </div>
 
-        <div className={"analysis_params"}>
-          <div>Max frequency to visualize (not hicut filter)</div>
-          <Select
-            options={maxFrequencyOptions}
-            defaultValue={maxFrequency}
-            onChange={(value) => { value ? setMaxFrequency(value) : null;}}
-          />
-        </div>
+          <div className={"analysis_params"}>
+            <div>FFT size</div>
+            <Select
+              options={fftSizeOptions}
+              defaultValue={fftSize}
+              onChange={(value) => { value ? setFftSize(value) : null;}}
+            />
+          </div>
 
-        <div className={"analysis_params"}>
-          <div>Frequency scale</div>
-          <Select
-            options={freqScaleOptions}
-            defaultValue={freqScale}
-            onChange={(value) => { value ? setFreqScale(value) : null;}}
-          />
-        </div>
+          <div className={"analysis_params"}>
+            <div>Max frequency to visualize (not hicut filter)</div>
+            <Select
+              options={maxFrequencyOptions}
+              defaultValue={maxFrequency}
+              onChange={(value) => { value ? setMaxFrequency(value) : null;}}
+            />
+          </div>
 
-        <div className={"analysis_params"}>
-          <div>Colormap</div>
-          <Select
-            options={colormapNameOptions}
-            defaultValue={colormapName}
-            onChange={(value) => { value ? setColormapName(value) : null;}}
-          />
-        </div>
-      </div>
-              {/* <div id="fftSamples">
-                    FFT size:
-                    <select value={fftSamples} onChange={(e) => setFftSamples(Number(e.target.value))} >
-                      {fftSamplesArray.map((value, index) => <option value={value} >{value}</option>)}
-                    </select>
-              </div> */}
+          <div className={"analysis_params"}>
+            <div>Frequency scale</div>
+            <Select
+              options={freqScaleOptions}
+              defaultValue={freqScale}
+              onChange={(value) => { value ? setFreqScale(value) : null;}}
+            />
+          </div>
+
+          <div className={"analysis_params"}>
+            <div>Colormap</div>
+            <Select
+              options={colormapNameOptions}
+              defaultValue={colormapName}
+              onChange={(value) => { value ? setColormapName(value) : null;}}
+            />
+          </div>
+        </details>
+        <details>
+          <summary><strong>WAV dump</strong></summary>
+          <div id="dump" ref={dumpWavefileView}></div>
+        </details>
+      </div>{/* option_panel */}
     </div>
   );
 };
