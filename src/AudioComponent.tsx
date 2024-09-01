@@ -4,6 +4,7 @@ import Select from "react-select";
 import WaveSurfer from 'wavesurfer.js';
 import TimeLine from 'wavesurfer.js/dist/plugins/timeline';
 import Spectrogram from 'wavesurfer.js/dist/plugins/spectrogram';
+import RegionsPlugin, {Region} from 'wavesurfer.js/dist/plugins/regions';
 
 import colormap from 'colormap';
 
@@ -24,6 +25,7 @@ type AnalysisParams = {
  */
 const AudioComponent = (props: AudioProps): JSX.Element => {
   const zoomRange = { min: 100, max: 1000, initial: 400 };
+  const heightRange = { min: 100, max: 400, initial: 160 };
   // const fftWindows = [
   //   { value: 'bartlett', label: 'Bartlett'},
   //   { value: 'bartlettHann', label: 'Bartlett-Hann'},
@@ -79,6 +81,7 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
 
   const [isPlaying, setPlaying] = useState<boolean|undefined>(undefined);
   const [zoom, setZoom] = useState(zoomRange.initial);
+  const [height, setHeight] = useState(heightRange.initial);
 
   const [fftSize, setFftSize] = useState(fftSizeOptions[2]);
   const [nyquistFrequency, setNyquistFrequency] = useState(nyquistFrequencyOptions[4]);
@@ -101,11 +104,15 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
 
   const wavesurferRef = useRef<WaveSurfer>();
   //const spectrogramRef = useRef<Spectrogram>();
+  const wsRegionsRef = useRef<RegionsPlugin>();
+  const [activeRegion, setActiveRegion] = useState<Region|undefined>(undefined);
 
   const waveContainerRef = useRef<HTMLDivElement>(null);
   const spectrogramContainerRef = useRef<HTMLDivElement>(null);
   const timelineContainerRef = useRef<HTMLDivElement>(null);
   const dumpWavefileView = useRef<HTMLDivElement>(null)
+
+  const [audioSampleRate, setAudioSampleRate] = useState<number>(-1);
 
   const waveColor = '#4BF2A7';
 
@@ -169,6 +176,7 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
           continue;
         }
       }
+      setAudioSampleRate(nSamplesPerSec);
 
       const len_second = datalength / nAvgBytesPerSec;
       const len_sample = datalength / nBlockAlign;
@@ -179,6 +187,7 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
         + "Data Length: " + len_sample.toString() + " sample"
         + " (" + len_second.toFixed(3).toString() + " sec)";
     }
+
 
     dumpWavefileView.current.innerHTML = "<div>" + html_waveinfo + "</div>"
                                         + "<div>" + html_dump_raw + "</div>";
@@ -219,7 +228,10 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
     }
 
     console.log('WaveSurfer.create called');
-    wavesurferRef.current = WaveSurfer.create({
+
+    let wsRegions:RegionsPlugin = RegionsPlugin.create();
+
+    let ws = WaveSurfer.create({
       container: waveContainerRef.current,
       waveColor: waveColor,
       fillParent: true,
@@ -246,10 +258,49 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
           windowFunc: 'hann',
           scale: freqScale.value as any,
           splitChannels: true,
-          height: 400
-        })
+          height: 200
+        }),
+        wsRegions
       ]
     });
+
+    wsRegions.enableDragSelection({
+      color: 'rgba(255, 64, 64, 0.3)',
+    });
+    wsRegions.on('region-out', (region) => {
+      // console.log('region-out', region);
+      if(ws.isPlaying() && ws.getCurrentTime() > region.end) {
+        ws.pause();
+      }
+      console.log(wsRegions.getRegions());
+    });
+    wsRegions.on('region-created', (region) => {
+      // console.log('region-created', region);
+      wsRegions.getRegions().forEach((r) => {
+        if(region.id != r.id) r.remove();
+      });
+      setActiveRegion(region);
+      // console.log(wsRegions.getRegions());
+    });
+    wsRegions.on('region-updated', (region) => {
+      // console.log('region-updated', region);
+      setActiveRegion(undefined);
+      setActiveRegion(region);
+    });
+    ws.on('interaction', (newTime) => {
+      // console.log('interaction', newTime);
+      let r = wsRegions.getRegions();
+      if(r.length > 0) {
+        if(newTime < r[0].start || r[0].end < newTime) {
+          wsRegions.clearRegions();
+          setActiveRegion(undefined);
+        }
+      }
+     });
+  
+
+    wavesurferRef.current = ws;
+    wsRegionsRef.current = wsRegions;
 
     lastParams.current.nyquistFrequency = nyquistFrequency.value;
     lastParams.current.fftsize = fftSize.value;
@@ -260,7 +311,7 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
     setAudioLoaded(false);
 
   }, [
-    wavesurferRef,
+    wavesurferRef, wsRegionsRef,
     waveContainerRef, spectrogramContainerRef, timelineContainerRef,
     nyquistFrequency, fftSize, maxFrequency, freqScale, colormapName
   ]);
@@ -277,21 +328,34 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
     if (wavesurfer && wavedataBlob && !isAudioLoaded) {
       console.log('wavesurfer.load called');
       wavesurfer.load(wavedataBlob)
-        .then(()=> {setAudioLoaded(true);});
+        .then(()=> {
+          setAudioLoaded(true);
+        });
     }
   }, [wavesurferRef, wavedataBlob, isAudioLoaded]);
 
   // play/pause based on the state
   useEffect(() => {
     const wavesurfer = wavesurferRef.current;
-    if (wavesurfer) {
-      if (isPlaying) {
-        wavesurfer.play();
-      } else {
-        wavesurfer.pause();
+    if (!wavesurfer) return;
+    if (!wsRegionsRef.current) return;
+
+    if (isPlaying) {
+      const r = wsRegionsRef.current.getRegions();
+      if (r.length > 0) {
+        let ct = wavesurfer.getCurrentTime();
+        if (ct < r[0].start || r[0].end < ct) {
+          wavesurfer.setTime(r[0].start);
+        }
       }
+      wavesurfer.play();
+      wavesurfer.once('pause', () => {
+        setPlaying(false);
+      });
+    } else {
+      wavesurfer.pause();
     }
-  }, [wavesurferRef, isPlaying]);
+  }, [wavesurferRef, wsRegionsRef, isPlaying]);
 
   // control zoom
   useEffect(() => {
@@ -300,8 +364,12 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
       wavesurfer.zoom(/*pxPerSec=*/ zoom);
       // wavesurfer.getActivePlugins()[0]._init(wavesurfer);
       // wavesurfer.getActivePlugins()[1]._init(wavesurfer);
+
+      wavesurfer.setOptions({
+        height: height
+      })
     }
-  }, [wavesurferRef, zoom, isAudioLoaded]);
+  }, [wavesurferRef, zoom, height, isAudioLoaded]);
 
   /*
   // space key handling
@@ -344,16 +412,19 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
       {/* <div id="timeline" ref={timelineContainerRef} /> */}
       <div id="waveform" ref={waveContainerRef} />
       {/* <div id="spectrogram" ref={spectrogramContainerRef} /> */}
-      <button
-        onClick={() => {
-          isPlaying ? setPlaying(false) : setPlaying(true);
-        }}
-      >
-        {' '}
-        Play/Pause{' '}
-      </button>
-      <div> {isPlaying ? 'Playing' : 'Pause'} </div>
-      <div id="zoom">
+      <div>
+        <button
+          onClick={() => {
+            isPlaying ? setPlaying(false) : setPlaying(true);
+          }}
+        >
+          {' '}
+          Play/Pause{' '}
+        </button>
+        <span> {isPlaying ? 'Playing' : 'Pause'} </span>
+      </div>
+      <hr />
+      <div id="zoom" className={"analysis_params"}>
         <input
           type="range"
           value={zoom}
@@ -362,47 +433,68 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
           max={zoomRange.max}
           style={{ width: '200px' }}
         />
-        zoom: {zoom} [pixel/sec]
+        x-zoom: {zoom} [pixel/sec]
       </div>
-      <div id="option_panel" style={{ margin: "50px" }}>
+      <div id="height" className={"analysis_params"}>
+        <input
+          type="range"
+          value={height}
+          onChange={e => setHeight(Number(e.target.value))}
+          min={heightRange.min}
+          max={heightRange.max}
+          style={{ width: '200px' }}
+        />
+        height: {height} [pixel]
+      </div>
+      <div id="option_panel" style={{ margin: "20px" }}>
+        <div><strong>Sample rate:</strong> <code>{audioSampleRate}</code> Hz</div>
+        <div id="region">
+          <strong>Region:</strong>
+          <code>({(activeRegion) ? activeRegion.start.toFixed(3) : ""},
+                {(activeRegion) ? activeRegion.end.toFixed(3) : ""})</code> sec.
+          /
+          <code>[{(activeRegion) ? (activeRegion.start * audioSampleRate).toFixed(0) : ""},
+                {(activeRegion) ? (activeRegion.end * audioSampleRate).toFixed(0) : ""}]</code> sample
+        </div>
+
         <details open>
           <summary><strong>Analysis paramters</strong></summary>
 
-          <div className={"analysis_params"}>
+          <label className={"analysis_params"}>
             <div>Nyquist frequency (sampling_rate / 2)</div>
             <Select
               options={nyquistFrequencyOptions}
               defaultValue={nyquistFrequency}
               onChange={(value) => { value ? setNyquistFrequency(value) : null;}}
             />
-          </div>
+          </label>
 
-          <div className={"analysis_params"}>
+          <label className={"analysis_params"}>
             <div>FFT size</div>
             <Select
               options={fftSizeOptions}
               defaultValue={fftSize}
               onChange={(value) => { value ? setFftSize(value) : null;}}
             />
-          </div>
+          </label>
 
-          <div className={"analysis_params"}>
+          <label className={"analysis_params"}>
             <div>Max frequency to visualize (not hicut filter)</div>
             <Select
               options={maxFrequencyOptions}
               defaultValue={maxFrequency}
               onChange={(value) => { value ? setMaxFrequency(value) : null;}}
             />
-          </div>
+          </label>
 
-          <div className={"analysis_params"}>
+          <label className={"analysis_params"}>
             <div>Frequency scale</div>
             <Select
               options={freqScaleOptions}
               defaultValue={freqScale}
               onChange={(value) => { value ? setFreqScale(value) : null;}}
             />
-          </div>
+          </label>
 
           <div className={"analysis_params"}>
             <div>Colormap</div>

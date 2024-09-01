@@ -1,11 +1,12 @@
 div#waveform {
     resize: vertical;
-    overflow-y: hidden;
+    overflow-y: auto;
     min-height: 320px;
+    max-height: 90%;
     background: black;
 }
 
-div.analysis_params {
+.analysis_params {
     display: inline-block;
     width: 200px;
     margin-right: 20px;
