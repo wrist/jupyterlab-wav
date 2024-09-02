@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import Select from "react-select";
+import Select from 'react-select';
 
 import WaveSurfer from 'wavesurfer.js';
 import TimeLine from 'wavesurfer.js/dist/plugins/timeline';
@@ -39,44 +39,44 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
   //   { value: 'triangular', label='Triangular'}
   // ];
   const nyquistFrequencyOptions = [
-    { value:  4000, label: "4000" },
-    { value:  8000, label: "8000" },
-    { value: 16000, label: "16000" },
-    { value: 22050, label: "22050" },
-    { value: 24000, label: "24000" },
-    { value: 44100, label: "44100" },
-    { value: 48000, label: "48000" },
+    { value:  4000, label: '4000' },
+    { value:  8000, label: '8000' },
+    { value: 16000, label: '16000' },
+    { value: 22050, label: '22050' },
+    { value: 24000, label: '24000' },
+    { value: 44100, label: '44100' },
+    { value: 48000, label: '48000' },
   ];
   const fftSizeOptions = [
-    { value:  256, label: "256" },
-    { value:  512, label: "512" },
-    { value: 1024, label: "1024" },
-    { value: 2048, label: "2048" },
-    { value: 4096, label: "4096" },
+    { value:  256, label: '256' },
+    { value:  512, label: '512' },
+    { value: 1024, label: '1024' },
+    { value: 2048, label: '2048' },
+    { value: 4096, label: '4096' },
   ];
   const maxFrequencyOptions = [
-    { value: undefined, label: "all" },
-    { value:  1000, label:  "1000" },
-    { value:  2000, label:  "2000" },
-    { value:  5000, label:  "5000" },
-    { value: 10000, label: "10000" },
-    { value: 12000, label: "12000" },
-    { value: 15000, label: "15000" },
-    { value: 20000, label: "20000" },
+    { value: undefined, label: 'all' },
+    { value:  1000, label:  '1000' },
+    { value:  2000, label:  '2000' },
+    { value:  5000, label:  '5000' },
+    { value: 10000, label: '10000' },
+    { value: 12000, label: '12000' },
+    { value: 15000, label: '15000' },
+    { value: 20000, label: '20000' },
   ];
   const freqScaleOptions = [
-    { value: "linear", label: "Linear scale"},
-    { value: "mel", label: "Mel scale"},
+    { value: 'linear', label: 'Linear scale'},
+    { value: 'mel', label: 'Mel scale'},
   ];
   const colormapNameOptions = [
-    { value: "gray", label: "Grayscale (ws)" },
-    { value: "igray", label: "Inversed Grayscale (ws)" },
-    { value: "roseus", label: "roseus (ws)" },
-    { value: "viridis", label: "viridis" },
-    { value: "plasma", label: "plasma" },
-    { value: "inferno", label: "inferno" },
-    { value: "magma", label: "magma" },
-    { value: "jet", label: "jet (not recommended)" },
+    { value: 'gray', label: 'Grayscale (ws)' },
+    { value: 'gray', label: 'Inversed Grayscale (ws)' },
+    { value: 'roseus', label: 'roseus (ws)' },
+    { value: 'viridis', label: 'viridis' },
+    { value: 'plasma', label: 'plasma' },
+    { value: 'inferno', label: 'inferno' },
+    { value: 'magma', label: 'magma' },
+    { value: 'jet', label: 'jet (not recommended)' },
   ]
 
   const [isPlaying, setPlaying] = useState<boolean|undefined>(undefined);
@@ -116,49 +116,43 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
 
   const waveColor = '#4BF2A7';
 
-  // const colors = colormap({
-  //   colormap: 'plasma',
-  //   nshades: 256,
-  //   format: 'float'
-  // });
-
   const [isAudioLoaded, setAudioLoaded] = useState(false);
   const regexBase64Text = /base64,/g;
 
   useEffect(() => {
-    if (! dumpWavefileView.current) return;
-    if (! wavedataBlob) return;
+    if (! dumpWavefileView.current) { return; }
+    if (! wavedataBlob) { return; }
 
-    let text:string = wavedataBlob;
+    const text:string = wavedataBlob;
 
     let pos = text.slice(0, 64).search(regexBase64Text);
-    if(pos == -1) return;
+    if(pos === -1) { return; }
     pos = pos + 7;  // len("base64,") == 7
   
     // Dump small data.
     // - 192 chars (144 bytes) ==> 8 columns x 16 bytes
-    let rawdata128 = atob(text.slice(pos, pos+192));
+    const rawdata128 = atob(text.slice(pos, pos+192));
 
     // Dump 1: Hex dump
-    let html_dump_raw = '<code>' + getDumpText(rawdata128, 8) + '</code>'
+    const html_dump_raw = '<code>' + getDumpText(rawdata128, 8) + '</code>';
 
     // Dump 2: Extract WAVEFORMATEX structure
     // https://learn.microsoft.com/ja-jp/windows/win32/medfound/tutorial--decoding-audio
     let html_waveinfo = '';
 
-    if("RIFF" != rawdata128.slice(0, 4)) return;
+    if('RIFF' !== rawdata128.slice(0, 4)) { return; }
 
-    let filesize = getUint32LE(rawdata128, 4) + 8;
+    const filesize = getUint32LE(rawdata128, 4) + 8;
     console.log(filesize);
 
-    if(rawdata128.slice(8, 12) == 'WAVE') {
+    if(rawdata128.slice(8, 12) === 'WAVE') {
       let offset = 12;
       let format, nChannel, nSamplesPerSec, nAvgBytesPerSec, nBlockAlign,
-          wBitsPerSample, cbSize;
+          wBitsPerSample; //, cbSize;
       let datalength = 0;
       while(offset < 128) {
-        if(rawdata128.slice(offset, offset+4) == 'fmt ') {
-          let chunk_size = getUint32LE(rawdata128, offset+4);
+        if(rawdata128.slice(offset, offset+4) === 'fmt ') {
+          const chunk_size = getUint32LE(rawdata128, offset+4);
           offset += 8;
           format          =  getInt16LE(rawdata128, offset+0);
           nChannel        =  getInt16LE(rawdata128, offset+2);
@@ -170,7 +164,7 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
           offset += chunk_size;
           continue;
         }
-        if(rawdata128.slice(offset, offset+4) == 'data') {
+        if(rawdata128.slice(offset, offset+4) === 'data') {
           datalength = getUint32LE(rawdata128, offset+4);
           offset += datalength + 8;
           continue;
@@ -181,32 +175,32 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
       const len_second = datalength / nAvgBytesPerSec;
       const len_sample = datalength / nBlockAlign;
 
-      html_waveinfo = "Format = " + format.toString() + ";"
-        + nChannel.toString() + "ch, " + (wBitsPerSample).toString() + " bit, "
-        + nSamplesPerSec.toString() + " Hz; " 
-        + "Data Length: " + len_sample.toString() + " sample"
-        + " (" + len_second.toFixed(3).toString() + " sec)";
+      html_waveinfo = 'Format = ' + format.toString() + ';'
+        + nChannel.toString() + 'ch, ' + (wBitsPerSample).toString() + ' bit, '
+        + nSamplesPerSec.toString() + ' Hz; ' 
+        + 'Data Length: ' + len_sample.toString() + ' sample'
+        + ' (' + len_second.toFixed(3).toString() + ' sec)';
     }
 
 
-    dumpWavefileView.current.innerHTML = "<div>" + html_waveinfo + "</div>"
-                                        + "<div>" + html_dump_raw + "</div>";
+    dumpWavefileView.current.innerHTML = '<div>' + html_waveinfo + '</div>'
+                                        + '<div>' + html_dump_raw + '</div>';
 
   }, [dumpWavefileView, wavedataBlob])
 
   // construct wavesurfer
   useEffect(() => {
-    if(waveContainerRef.current == null) return;
+    if(!waveContainerRef.current) { return; }
     // if(timelineContainerRef.current == null) return;
     // if(spectrogramContainerRef.current == null) return;
 
     if (wavesurferRef.current &&
         (
-          lastParams.current.fftsize != fftSize.value ||
-          lastParams.current.nyquistFrequency != nyquistFrequency.value ||
-          lastParams.current.maxFrequency != maxFrequency.value ||
-          lastParams.current.freqScale != freqScale.value ||
-          lastParams.current.colormapName != colormapName.value
+          lastParams.current.fftsize !== fftSize.value ||
+          lastParams.current.nyquistFrequency !== nyquistFrequency.value ||
+          lastParams.current.maxFrequency !== maxFrequency.value ||
+          lastParams.current.freqScale !== freqScale.value ||
+          lastParams.current.colormapName !== colormapName.value
         )
     ){
         // Redraw with another analysis parameter
@@ -215,10 +209,10 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
         console.log('WaveSurfer was destroyed.');
     }
 
-    if(wavesurferRef.current) return;
+    if(wavesurferRef.current) { return; }
 
     let colors:any = undefined;
-    if(colormapName.value == 'gray' || colormapName.value == 'igray' || colormapName.value == 'roseus') {
+    if(colormapName.value === 'gray' || colormapName.value === 'igray' || colormapName.value === 'roseus') {
       colors = colormapName.value
     } else {
       colors = colormap({
@@ -229,9 +223,9 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
 
     console.log('WaveSurfer.create called');
 
-    let wsRegions:RegionsPlugin = RegionsPlugin.create();
+    const wsRegions:RegionsPlugin = RegionsPlugin.create();
 
-    let ws = WaveSurfer.create({
+    const ws = WaveSurfer.create({
       container: waveContainerRef.current,
       waveColor: waveColor,
       fillParent: true,
@@ -278,7 +272,7 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
     wsRegions.on('region-created', (region) => {
       // console.log('region-created', region);
       wsRegions.getRegions().forEach((r) => {
-        if(region.id != r.id) r.remove();
+        if(region.id !== r.id) { r.remove(); }
       });
       setActiveRegion(region);
       // console.log(wsRegions.getRegions());
@@ -290,7 +284,7 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
     });
     ws.on('interaction', (newTime) => {
       // console.log('interaction', newTime);
-      let r = wsRegions.getRegions();
+      const r = wsRegions.getRegions();
       if(r.length > 0) {
         if(newTime < r[0].start || r[0].end < newTime) {
           wsRegions.clearRegions();
@@ -338,13 +332,13 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
   // play/pause based on the state
   useEffect(() => {
     const wavesurfer = wavesurferRef.current;
-    if (!wavesurfer) return;
-    if (!wsRegionsRef.current) return;
+    if (!wavesurfer) { return; }
+    if (!wsRegionsRef.current) { return; }
 
     if (isPlaying) {
       const r = wsRegionsRef.current.getRegions();
       if (r.length > 0) {
-        let ct = wavesurfer.getCurrentTime();
+        const ct = wavesurfer.getCurrentTime();
         if (ct < r[0].start || r[0].end < ct) {
           wavesurfer.setTime(r[0].start);
         }
@@ -425,7 +419,7 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
         <span> {isPlaying ? 'Playing' : 'Pause'} </span>
       </div>
       <hr />
-      <div id="zoom" className={"analysis_params"}>
+      <div id="zoom" className={'analysis_params'}>
         <input
           type="range"
           value={zoom}
@@ -436,7 +430,7 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
         />
         x-zoom: {zoom} [pixel/sec]
       </div>
-      <div id="height" className={"analysis_params"}>
+      <div id="height" className={'analysis_params'}>
         <input
           type="range"
           value={height}
@@ -447,21 +441,21 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
         />
         height: {height} [pixel]
       </div>
-      <div id="option_panel" style={{ margin: "20px" }}>
+      <div id="option_panel" style={{ margin: '20px' }}>
         <div><strong>Sample rate:</strong> <code>{audioSampleRate}</code> Hz</div>
         <div id="region">
           <strong>Region:</strong>
-          <code>({(activeRegion) ? activeRegion.start.toFixed(3) : ""},
-                {(activeRegion) ? activeRegion.end.toFixed(3) : ""})</code> sec.
+          <code>({(activeRegion) ? activeRegion.start.toFixed(3) : ''},
+                {(activeRegion) ? activeRegion.end.toFixed(3) : ''})</code> sec.
           /
-          <code>[{(activeRegion) ? (activeRegion.start * audioSampleRate).toFixed(0) : ""},
-                {(activeRegion) ? (activeRegion.end * audioSampleRate).toFixed(0) : ""}]</code> sample
+          <code>[{(activeRegion) ? (activeRegion.start * audioSampleRate).toFixed(0) : ''},
+                {(activeRegion) ? (activeRegion.end * audioSampleRate).toFixed(0) : ''}]</code> sample
         </div>
 
         <details open>
           <summary><strong>Analysis paramters</strong></summary>
 
-          <label className={"analysis_params"}>
+          <label className={'analysis_params'}>
             <div>Nyquist frequency (sampling_rate / 2)</div>
             <Select
               options={nyquistFrequencyOptions}
@@ -470,7 +464,7 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
             />
           </label>
 
-          <label className={"analysis_params"}>
+          <label className={'analysis_params'}>
             <div>FFT size</div>
             <Select
               options={fftSizeOptions}
@@ -479,7 +473,7 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
             />
           </label>
 
-          <label className={"analysis_params"}>
+          <label className={'analysis_params'}>
             <div>Max frequency to visualize (not hicut filter)</div>
             <Select
               options={maxFrequencyOptions}
@@ -488,7 +482,7 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
             />
           </label>
 
-          <label className={"analysis_params"}>
+          <label className={'analysis_params'}>
             <div>Frequency scale</div>
             <Select
               options={freqScaleOptions}
@@ -497,14 +491,14 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
             />
           </label>
 
-          <div className={"analysis_params"}>
+          <label className={'analysis_params'}>
             <div>Colormap</div>
             <Select
               options={colormapNameOptions}
               defaultValue={colormapName}
               onChange={(value) => { value ? setColormapName(value) : null;}}
             />
-          </div>
+          </label>
         </details>
         <details>
           <summary><strong>WAV dump</strong></summary>
