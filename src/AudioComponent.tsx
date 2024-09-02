@@ -58,10 +58,10 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
     { value: undefined, label: "all" },
     { value:  1000, label:  "1000" },
     { value:  2000, label:  "2000" },
-    { value:  4000, label:  "4000" },
-    { value:  8000, label:  "8000" },
+    { value:  5000, label:  "5000" },
+    { value: 10000, label: "10000" },
     { value: 12000, label: "12000" },
-    { value: 16000, label: "16000" },
+    { value: 15000, label: "15000" },
     { value: 20000, label: "20000" },
   ];
   const freqScaleOptions = [
@@ -258,7 +258,8 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
           windowFunc: 'hann',
           scale: freqScale.value as any,
           splitChannels: true,
-          height: 200
+          height: 256   // Preferably a power of 2 for Y-axis label.
+                        // See also the variable 'labelIndex' in Spectrogram.loadLabels().
         }),
         wsRegions
       ]
