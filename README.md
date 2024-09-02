@@ -4,7 +4,7 @@
 
 A simple wave file viewer using [WaveSurfer.js](https://wavesurfer-js.org/) for JupyterLab.
 
-![screenshot](./img/screenshot_v040.png)
+![screenshot](./img/screenshot_v042.png)
 
 ## Requirements
 
