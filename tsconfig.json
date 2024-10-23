@@ -11,15 +11,15 @@
     "noEmitOnError": true,
     //"noImplicitAny": true,
     "noImplicitAny": false,
-    "noUnusedLocals": true,
+    "noUnusedLocals": false,
     "outDir": "lib",
     "preserveWatchOutput": true,
     "resolveJsonModule": true,
     "rootDir": "src",
     "sourceMap": true,
     "strict": true,
-    "target": "es2017",
-    "types": ["jest"]
+    "strictNullChecks": true,
+    "target": "ES2018"
   },
   "include": ["src/**/*"]
 }

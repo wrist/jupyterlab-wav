@@ -2,6 +2,8 @@ import { IRenderMime } from '@jupyterlab/rendermime-interfaces';
 
 import { WavWidget } from './widget';
 
+import audiofileIcon from '../style/audiofile.svg';
+
 /**
  * The default mime type for the extension.
  */
@@ -27,18 +29,30 @@ const extension: IRenderMime.IExtension = {
   fileTypes: [
     {
       name: 'wav',
+      icon: {
+        name: '@wrist/jupyterlab_wav:audiofile-wav',
+        svgstr: audiofileIcon
+      },
       fileFormat: 'base64',
       mimeTypes: [MIME_TYPES[0]],
       extensions: ['.wav']
     },
     {
       name: 'mp3',
+      icon: {
+        name: '@wrist/jupyterlab_wav:audiofile-wav',
+        svgstr: audiofileIcon
+      },
       fileFormat: 'base64',
       mimeTypes: [MIME_TYPES[1]],
       extensions: ['.mp3']
     },
     {
       name: 'flac',
+      icon: {
+        name: '@wrist/jupyterlab_wav:audiofile-wav',
+        svgstr: audiofileIcon
+      },
       fileFormat: 'base64',
       mimeTypes: [MIME_TYPES[2]],
       extensions: ['.flac']

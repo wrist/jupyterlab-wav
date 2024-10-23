@@ -1,0 +1,24 @@
+.mimerenderer-wav {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: auto;
+}
+
+div#waveform {
+    resize: vertical;
+    overflow-y: auto;
+    min-height: 320px;
+    max-height: 90%;
+    background: black;
+}
+
+.analysis_params {
+    display: inline-block;
+    width: 200px;
+    margin-right: 20px;
+}
+
+div#dump {
+    white-space: pre;
+}
