@@ -51,8 +51,6 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
     { value:  256, label: '256' },
     { value:  512, label: '512' },
     { value: 1024, label: '1024' },
-    { value: 2048, label: '2048' },
-    { value: 4096, label: '4096' },
   ];
   const maxFrequencyOptions = [
     { value: undefined, label: 'all' },
@@ -83,7 +81,7 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
   const [zoom, setZoom] = useState(zoomRange.initial);
   const [height, setHeight] = useState(heightRange.initial);
 
-  const [fftSize, setFftSize] = useState(fftSizeOptions[2]);
+  const [fftSize, setFftSize] = useState(fftSizeOptions[1]);
   const [nyquistFrequency, setNyquistFrequency] = useState(nyquistFrequencyOptions[4]);
   const [maxFrequency, setMaxFrequency] = useState(maxFrequencyOptions[5]);
   const [freqScale, setFreqScale] = useState(freqScaleOptions[0]);
@@ -91,7 +89,7 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
   // const fftWindow:any = fftWindows[7];
   const lastParams = useRef<AnalysisParams>({
     nyquistFrequency: nyquistFrequencyOptions[4].value,
-    fftsize: fftSizeOptions[2].value,
+    fftsize: fftSizeOptions[1].value,
     maxFrequency: maxFrequencyOptions[5].value,
     freqScale: freqScaleOptions[0].value,
     colormapName: colormapNameOptions[3].value
@@ -252,7 +250,8 @@ const AudioComponent = (props: AudioProps): JSX.Element => {
           windowFunc: 'hann',
           scale: freqScale.value as any,
           splitChannels: true,
-          height: 256   // Preferably a power of 2 for Y-axis label.
+          height: fftSize.value   // height < fftSamples would be cause invalid freq axis.
+                        // Anyway, Preferably a power of 2 for Y-axis label.
                         // See also the variable 'labelIndex' in Spectrogram.loadLabels().
         }),
         wsRegions
